@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Link from "next/link";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,13 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="relative flex min-h-screen flex-col">
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="relative flex min-h-screen flex-col">
             {/* Global Header/Navbar placeholder */}
             <header className="sticky top-0 z-50 w-full border-b border-border/40 glass">
               <div className="container flex h-14 max-w-screen-2xl items-center px-4">
@@ -53,9 +55,10 @@ export default function RootLayout({
                 </div>
               </div>
             </header>
-            <main className="flex-1">{children}</main>
-          </div>
-        </ThemeProvider>
+              <main className="flex-1">{children}</main>
+            </div>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
