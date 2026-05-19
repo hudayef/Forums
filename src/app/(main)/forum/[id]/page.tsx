@@ -37,7 +37,7 @@ export default async function ThreadPage(props: { params: Promise<{ id: string }
         {/* Thread Content */}
         <div className="glass-card p-6">
           <div className="flex gap-6">
-            <VoteButtons targetId={thread.id} targetType="THREAD" initialVotes={thread._count.votes} />
+            <VoteButtons targetId={thread.id} targetType="THREAD" initialVotes={thread.votes.reduce((acc, vote) => acc + vote.type, 0)} />
             <div className="flex-1 space-y-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{thread.author?.name || "Unknown User"}</span>
@@ -104,7 +104,7 @@ async function CommentsList({ threadId }: { threadId: string }) {
         {comments.map((comment) => (
           <div key={comment.id} className="glass-card p-4">
             <div className="flex gap-4">
-              <VoteButtons targetId={comment.id} targetType="COMMENT" initialVotes={comment._count.votes} />
+              <VoteButtons targetId={comment.id} targetType="COMMENT" initialVotes={comment.votes.reduce((acc, vote) => acc + vote.type, 0)} />
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">{comment.author?.name || "Unknown User"}</span>

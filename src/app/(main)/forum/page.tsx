@@ -68,14 +68,9 @@ async function ThreadList({ page, categoryId }: { page: number; categoryId?: str
         {threads.map((thread) => (
           <div key={thread.id} className="glass-card p-4 transition-all hover:border-primary/50">
             <div className="flex gap-4">
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <button className="hover:text-primary transition-colors">
-                  <ArrowUp className="h-5 w-5" />
-                </button>
-                <span className="text-sm font-medium">{thread._count.votes}</span>
-                <button className="hover:text-destructive transition-colors">
-                  <ArrowDown className="h-5 w-5" />
-                </button>
+              <div className="flex flex-col items-center justify-center min-w-8">
+                <span className="text-lg font-bold">{thread.votes.reduce((acc, vote) => acc + vote.type, 0)}</span>
+                <span className="text-xs text-muted-foreground">votes</span>
               </div>
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

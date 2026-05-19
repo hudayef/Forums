@@ -16,10 +16,10 @@ export async function createThreadAction(formData: FormData) {
   }
 
   const rawData = {
-    title: formData.get("title") as string,
-    content: formData.get("content") as string,
-    categoryId: formData.get("categoryId") as string,
-    tags: formData.get("tags") ? (formData.get("tags") as string).split(",") : undefined,
+    title: formData.get("title")?.toString() || "",
+    content: formData.get("content")?.toString() || "",
+    categoryId: formData.get("categoryId")?.toString() || "",
+    tags: formData.get("tags") ? formData.get("tags")?.toString().split(",") : undefined,
   };
 
   const parsed = CreateThreadSchema.safeParse(rawData);
@@ -43,9 +43,9 @@ export async function createCommentAction(formData: FormData) {
   }
 
   const rawData = {
-    content: formData.get("content") as string,
-    threadId: formData.get("threadId") as string,
-    parentId: formData.get("parentId") as string | undefined,
+    content: formData.get("content")?.toString() || "",
+    threadId: formData.get("threadId")?.toString() || "",
+    parentId: formData.get("parentId")?.toString() || undefined,
   };
 
   const parsed = CreateCommentSchema.safeParse(rawData);

@@ -28,7 +28,8 @@ export class ForumRepository {
           author: { select: { id: true, name: true, image: true } },
           category: true,
           tags: true,
-          _count: { select: { comments: true, votes: true } },
+          votes: { select: { type: true } },
+          _count: { select: { comments: true } },
         },
       }),
       prisma.thread.count({ where }),
@@ -44,7 +45,8 @@ export class ForumRepository {
         author: { select: { id: true, name: true, image: true } },
         category: true,
         tags: true,
-        _count: { select: { comments: true, votes: true } },
+        votes: { select: { type: true } },
+        _count: { select: { comments: true } },
       },
     });
   }
@@ -79,7 +81,8 @@ export class ForumRepository {
       where: { threadId, deletedAt: null },
       include: {
         author: { select: { id: true, name: true, image: true } },
-        _count: { select: { votes: true, replies: true } },
+        votes: { select: { type: true } },
+        _count: { select: { replies: true } },
       },
       orderBy: { createdAt: "asc" },
     });

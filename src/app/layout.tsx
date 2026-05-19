@@ -49,8 +49,9 @@ export default function RootLayout({
                   </Link>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                  <nav className="flex items-center space-x-2">
-                    {/* Theme Toggle placeholder */}
+                  <nav className="flex items-center space-x-6 text-sm font-medium">
+                    <Link href="/forum" className="transition-colors hover:text-foreground/80 text-foreground/60">Forum</Link>
+                    <Link href="/articles" className="transition-colors hover:text-foreground/80 text-foreground/60">Articles</Link>
                   </nav>
                 </div>
               </div>
