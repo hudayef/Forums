@@ -1,0 +1,387 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// USER & AUTHENTICATION (Auth.js Compatible)
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // For email/password auth
+
+  roleId        String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relations
+  threads       Thread[]
+  comments      Comment[]
+  notes         Note[]
+  articles      Article[]
+  orders        Order[]
+  notifications Notification[]
+  achievements  UserAchievement[]
+  votes         Vote[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  @@index([email])
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// -----------------------------------------------------------------------------
+// RBAC (Role-Based Access Control)
+// -----------------------------------------------------------------------------
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique // guest, member, moderator, admin, super_admin
+  users       User[]
+  permissions Permission[]
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  action      String  // e.g., "create:thread", "delete:user"
+  resource    String  // e.g., "thread", "user"
+
+  roles       Role[]
+}
+
+// -----------------------------------------------------------------------------
+// FORUM SYSTEM
+// -----------------------------------------------------------------------------
+
+model Thread {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  isPinned    Boolean   @default(false)
+  viewCount   Int       @default(0)
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  tags        Tag[]
+  comments    Comment[]
+  votes       Vote[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  threads     Thread[]
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  threads Thread[]
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String    @db.Text
+
+  threadId  String
+  thread    Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
+
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+  votes     Vote[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([threadId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  type      Int      // 1 for upvote, -1 for downvote
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  threadId  String?
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, threadId])
+  @@unique([userId, commentId])
+}
+
+// -----------------------------------------------------------------------------
+// NOTE SHARING
+// -----------------------------------------------------------------------------
+
+model Note {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  courseName  String?
+  rating      Float     @default(0)
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([authorId])
+}
+
+// -----------------------------------------------------------------------------
+// ARTICLE SYSTEM
+// -----------------------------------------------------------------------------
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  content     String    @db.Text // Markdown
+  status      String    @default("DRAFT") // DRAFT, PUBLISHED, SCHEDULED
+  publishAt   DateTime?
+  viewCount   Int       @default(0)
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([authorId])
+}
+
+// -----------------------------------------------------------------------------
+// QUIZ SYSTEM
+// -----------------------------------------------------------------------------
+
+model Quiz {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  timeLimit   Int?        // in seconds
+
+  questions   Question[]
+  attempts    QuizAttempt[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Question {
+  id            String    @id @default(cuid())
+  quizId        String
+  quiz          Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text          String
+  explanation   String?
+
+  options       Option[]
+
+  @@index([quizId])
+}
+
+model Option {
+  id          String    @id @default(cuid())
+  questionId  String
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text        String
+  isCorrect   Boolean   @default(false)
+
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id          String    @id @default(cuid())
+  quizId      String
+  quiz        Quiz      @relation(fields: [quizId], references: [id])
+  userId      String
+  score       Int
+
+  createdAt   DateTime  @default(now())
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+// -----------------------------------------------------------------------------
+// MARKETPLACE & PAYMENTS
+// -----------------------------------------------------------------------------
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  images      String[]
+
+  sellerId    String
+
+  orders      OrderItem[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      String      @default("PENDING") // PENDING, PAID, SHIPPED, COMPLETED, CANCELLED
+  totalAmount Decimal     @db.Decimal(10, 2)
+
+  items       OrderItem[]
+  payment     Payment?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount        Decimal  @db.Decimal(10, 2)
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  paymentMethod String?
+  transactionId String?  // e.g. Midtrans transaction ID
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// NOTIFICATIONS & ACHIEVEMENTS
+// -----------------------------------------------------------------------------
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // SYSTEM, REPLY, LIKE, ORDER_UPDATE
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  name        String
+  description String
+  iconUrl     String
+  points      Int               @default(0)
+
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  awardedAt     DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
