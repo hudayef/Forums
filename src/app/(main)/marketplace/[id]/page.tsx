@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { PackageOpen } from "lucide-react";
 import { AddToCartButton } from "@/features/marketplace/components/add-to-cart-button";
-import Image from "next/image";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -34,16 +33,9 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10">
 
             {/* Image Placeholder */}
-            <div className="bg-muted rounded-xl flex items-center justify-center min-h-[300px] md:min-h-[400px] relative overflow-hidden">
+            <div className="bg-muted rounded-xl flex items-center justify-center min-h-[300px] md:min-h-[400px]">
                {product.images?.[0] ? (
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    priority
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
-                  />
+                  <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover rounded-xl" />
                 ) : (
                   <PackageOpen className="h-24 w-24 text-muted-foreground" />
                 )}

@@ -58,26 +58,6 @@ export async function createCommentAction(formData: FormData) {
     authorId: session.user.id,
   });
 
-  // Fetch the thread to know who to notify
-  const thread = await ForumRepository.getThreadById(parsed.data.threadId);
-
-  if (thread && thread.authorId !== session.user.id) {
-    const { NotificationRepository } = await import("@/repositories/notification.repository");
-    const { RealtimeService } = await import("@/services/realtime.service");
-
-    // 1. Persist notification to DB
-    const notification = await NotificationRepository.createNotification({
-      userId: thread.authorId,
-      type: "REPLY",
-      title: "New Comment on your Thread",
-      message: `${session.user.name || "Someone"} commented: "${parsed.data.content.substring(0, 50)}..."`,
-      linkUrl: `/forum/${thread.id}#comments`,
-    });
-
-    // 2. Broadcast event
-    RealtimeService.broadcastNotification(thread.authorId, notification);
-  }
-
   revalidatePath(`/forum/${parsed.data.threadId}`);
   return comment;
 }
