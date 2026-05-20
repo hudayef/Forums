@@ -52,7 +52,6 @@ export default function RootLayout({
                   <nav className="flex items-center space-x-6 text-sm font-medium">
                     <Link href="/forum" className="transition-colors hover:text-foreground/80 text-foreground/60">Forum</Link>
                     <Link href="/articles" className="transition-colors hover:text-foreground/80 text-foreground/60">Articles</Link>
-                    <Link href="/notes" className="transition-colors hover:text-foreground/80 text-foreground/60">Notes</Link>
                   </nav>
                 </div>
               </div>
