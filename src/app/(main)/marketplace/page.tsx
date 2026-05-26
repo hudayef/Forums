@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PackageOpen, ShoppingBag } from "lucide-react";
+import Image from "next/image";
 
 export const metadata = {
   title: "Marketplace | CampusConnect",
@@ -67,10 +68,15 @@ async function ProductList({ page, search }: { page: number; search?: string }) 
         {products.map((product) => (
           <Link key={product.id} href={`/marketplace/${product.id}`} className="block group">
             <div className="glass-card h-full overflow-hidden transition-all hover:border-primary/50 flex flex-col">
-              <div className="bg-muted flex items-center justify-center h-48 w-full group-hover:bg-muted/80 transition-colors">
+              <div className="bg-muted flex items-center justify-center h-48 w-full group-hover:bg-muted/80 transition-colors relative">
                 {product.images?.[0] ? (
-                  // Assuming images logic
-                  <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                  />
                 ) : (
                   <PackageOpen className="h-12 w-12 text-muted-foreground" />
                 )}

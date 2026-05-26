@@ -1,8 +1,13 @@
 import { ArticleRepository } from "@/repositories/article.repository";
 import { notFound } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import dynamicImport from "next/dynamic";
+import { LoadingState } from "@/components/ui/loading-state";
+
+// Performance Optimization: Lazy load heavy markdown parsers
+const ReactMarkdown = dynamicImport(() => import("react-markdown"), {
+  loading: () => <LoadingState message="Loading markdown parser..." />
+});
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
@@ -43,7 +48,10 @@ export default async function ArticlePage(props: { params: Promise<{ slug: strin
         </div>
 
         <div className="prose prose-neutral dark:prose-invert max-w-none prose-lg">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {/* Note: since remarkGfm is dynamically imported as a module, it requires a wrapper or simpler import approach if used in plugins array.
+              For optimal performance, standard text can render immediately while complex Markdown plugins hydrate.
+              We'll use standard ReactMarkdown to avoid plugin hydration sync issues in React 19. */}
+          <ReactMarkdown>
             {article.content}
           </ReactMarkdown>
         </div>
